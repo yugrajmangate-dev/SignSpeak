@@ -31,7 +31,7 @@ with demo:
             else:
                 st.info('No supported gesture recognized. Show your whole hand clearly and retake the photo.')
     sentence = st.text_area('Sentence to speak', value=predicted.replace('_', ' '))
-    speech_text = json.dumps(sentence).replace('<', '\u003c')
+    speech_text = json.dumps(sentence).replace('<', '\\u003c')
     components.html(f"""
         <button id="speak" type="button">Speak sentence</button>
         <span id="status" role="status"></span>
