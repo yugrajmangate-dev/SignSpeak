@@ -1,0 +1,4 @@
+-r requirements.txt
+opencv-python==4.10.0.84
+pynput==1.7.7
+pyttsx3==2.90
