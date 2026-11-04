@@ -14,6 +14,10 @@ def main() -> None:
     if not path.exists():
         raise SystemExit('STOP: recorded results/metrics.json is missing. Collect data and train first; no docs or thumbnail generated.')
     m = json.loads(path.read_text())
+    if m.get('data_source') == 'pretrained':
+        from prepare_pretrained_submission import main as prepare_pretrained
+        prepare_pretrained()
+        return
     required = ('data_source', 'accuracy', 'macro_f1', 'latency_ms', 'n_samples', 'test_session', 'signers', 'n_sessions', 'train_size', 'test_size', 'labels', 'model_chosen')
     missing = [key for key in required if key not in m]
     if missing or m.get('data_source') != 'recorded':

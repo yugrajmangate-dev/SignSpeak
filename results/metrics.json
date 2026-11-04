@@ -1,0 +1,28 @@
+{
+  "data_source": "pretrained",
+  "model_chosen": "MediaPipe Gesture Recognizer (official float16 bundle, version 1)",
+  "model_source": "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+  "model_documentation": "https://developers.google.com/edge/mediapipe/solutions/vision/gesture_recognizer",
+  "model_sha256": "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
+  "model_bytes": 8373440,
+  "labels": [
+    "Closed_Fist",
+    "Open_Palm",
+    "Pointing_Up",
+    "Thumb_Down",
+    "Thumb_Up",
+    "Victory",
+    "ILoveYou"
+  ],
+  "accuracy": null,
+  "macro_f1": null,
+  "latency_ms": null,
+  "n_samples": null,
+  "n_sessions": null,
+  "test_session": null,
+  "train_size": null,
+  "test_size": null,
+  "signers": null,
+  "per_class_report": null,
+  "evaluation_note": "Official pretrained model; no project-specific training, held-out dataset, cross-signer test, or measured accuracy/F1/latency. Confidence is not accuracy."
+}

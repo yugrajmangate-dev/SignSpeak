@@ -5,13 +5,17 @@ import cv2
 import joblib
 import mediapipe as mp
 from common import ROOT, normalize
+from gesture import create_recognizer, predict
 
 
 def main() -> None:
-    bundle = joblib.load(ROOT / 'model.joblib')
+    custom = (ROOT / 'model.joblib').exists()
+    bundle = joblib.load(ROOT / 'model.joblib') if custom else {}
     if bundle.get('synthetic'):
         print('SYNTHETIC model: predictions are not real recognition. Collect sessions and retrain.')
-    model = bundle['model']
+    model = bundle.get('model')
+    if not custom:
+        print('Official pretrained gesture model; no project accuracy evaluation.')
     try:
         import pyttsx3
         voice = pyttsx3.init()
@@ -24,29 +28,36 @@ def main() -> None:
     try:
         if not cap.isOpened():
             raise RuntimeError('Cannot open webcam 0; check permissions.')
-        with mp.solutions.hands.Hands(max_num_hands=1) as hands:
+        with (mp.solutions.hands.Hands(max_num_hands=1) if custom else create_recognizer()) as hands:
             while True:
                 ok, frame = cap.read()
                 if not ok:
                     break
                 frame = cv2.flip(frame, 1)
-                result = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if custom:
+                    result = hands.process(rgb)
+                    raw = ''
+                    if result.multi_hand_landmarks:
+                        features = normalize(result.multi_hand_landmarks[0].landmark, result.multi_handedness[0].classification[0].label)
+                        if features is not None:
+                            raw = str(model.predict(features.reshape(1, -1))[0])
+                else:
+                    raw, _ = predict(hands, rgb)
                 label = ''
-                if result.multi_hand_landmarks:
-                    features = normalize(result.multi_hand_landmarks[0].landmark, result.multi_handedness[0].classification[0].label)
-                    if features is not None:
-                        votes.append(str(model.predict(features.reshape(1, -1))[0]))
-                        if len(votes) == 10:
-                            candidate, count = Counter(votes).most_common(1)[0]
-                            label = candidate if count > 5 else ''
+                if raw:
+                    votes.append(raw)
+                    if len(votes) == 10:
+                        candidate, count = Counter(votes).most_common(1)[0]
+                        label = candidate if count > 5 else ''
                 else:
                     votes.clear()
-                    appended = ''  # removing hand permits repeated letters
+                    appended = ''
                 now = time.monotonic()
                 if label != stable or not label:
                     stable, since = label, now
                 elif now - since >= 1 and label != appended:
-                    sentence += ('' if len(label) == 1 else ' ') + label.replace('_', ' ')
+                    sentence += ('' if len(label) == 1 else ' ') + ('I love you' if label == 'ILoveYou' else label.replace('_', ' '))
                     if len(label) > 1:
                         sentence += ' '
                     appended = label

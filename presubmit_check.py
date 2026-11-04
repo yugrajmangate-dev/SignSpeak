@@ -1,5 +1,6 @@
 """Report submission readiness; --deep installs cloud deps in a fresh temp venv."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -33,9 +34,12 @@ def main() -> None:
     try:
         m = json.loads((ROOT / 'results/metrics.json').read_text())
         recorded = m.get('data_source') == 'recorded'
+        if m.get('data_source') == 'pretrained':
+            model = ROOT / 'models/gesture_recognizer.task'
+            recorded = model.exists() and hashlib.sha256(model.read_bytes()).hexdigest() == m.get('model_sha256') and all(m.get(key) is None for key in ('accuracy', 'macro_f1', 'latency_ms'))
     except (OSError, ValueError):
         recorded = False
-    check('Metrics come from recorded data', recorded)
+    check('Metrics provenance: recorded evaluation or disclosed unevaluated pretrained model', recorded)
     for name in ('live_demo.png', 'streamlit_app.png'):
         check(f'Screenshot {name}', (ROOT / 'docs/screenshots' / name).is_file())
     thumbnail = ROOT / 'docs/thumbnail.png'
